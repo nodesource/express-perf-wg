@@ -3,7 +3,7 @@ export async function requests () {
 }
 
 export function server () {
-  return import('@expressjs/perf-servers/node-http');
+  return import('@expressjs/perf-servers-node-http');
 }
 
 if (import.meta.main || import.meta.filename === process.argv[1]) {

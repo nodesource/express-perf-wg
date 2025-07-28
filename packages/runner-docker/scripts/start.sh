@@ -59,6 +59,20 @@ spinner()
 # cd into server 
 cd $(node -p "require('node:path').dirname(require.resolve(\"$TEST\"))")
 
+# Apply overrides to package.json
+if [ -d "node_modules" ]; then
+  echo "removing existing node_modules"
+  rm -rf node_modules
+fi
+if [ -f "package.json.bak" ]; then
+  echo "package.json.bak exists, restoring original"
+  mv -f package.json.bak package.json
+fi
+if [ -n "$OVERRIDES" ]; then
+  cp package.json package.json.bak
+  ( rm -f package.json && node /home/node/overrides.mjs "${OVERRIDES}" > package.json ) < package.json;
+fi
+
 # Run server setup
 echo "Running setup..."
 node --run setup || npm run setup
@@ -97,7 +111,7 @@ on_sigint()
   local EX=$?
 
   echo "Generating flamegraph"
-  perf script -i /home/node/results/perf.data | /home/node/FlameGraph/stackcollapse-perf.pl | /home/node/FlameGraph/flamegraph.pl --colors=js > /home/node/results/profile.svg
+  perf script -i /home/node/results/perf.data | /home/node/FlameGraph/stackcollapse-perf.pl | /home/node/FlameGraph/flamegraph.pl --colors=js > /home/node/results/profile.svg || true
 
   EXIT_CODE=${EX:-0}
 }
@@ -123,6 +137,15 @@ done
 echo -ne "Running..."
 while true; do
   if [ -n "$EXIT_CODE" ]; then
+
+    if [ -f "package.json.bak" ]; then
+      echo "restoring original package.json"
+      mv -f package.json.bak package.json
+    fi
+
+    echo "moving package-lock.json to results"
+    mv -f package-lock.json /home/node/results/package-lock.json
+
     echo "Exiting (${EXIT_CODE})"
     exit "${EXIT_CODE-0}"
   fi

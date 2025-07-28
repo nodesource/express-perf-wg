@@ -5,6 +5,7 @@
   "scripts": {
     "setup": "npm i",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "load": "expf load",
     "test:load": "expf load --test=@expressjs/perf-load-example",
     "test:load:node": "expf load --test=@expressjs/perf-load-node-http",
     "compare": "expf compare"
@@ -18,6 +19,7 @@
   "license": "MIT",
   "workspaces": [
     "./packages/*",
+    "./servers/*",
     "./perf/load/*",
     "./perf/bench/*"
   ]
