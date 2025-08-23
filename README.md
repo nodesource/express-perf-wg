@@ -22,6 +22,7 @@ We focus on **evaluation, not prescription**. Rather than dictating how to write
 - Tooling: [see Perf CLI Readme.md](./packages/cli/README.md)
 - Provide environments and tools to make measurements possible
 - Help contributors run performance tests and interpret results
+- Support dependency version overrides for testing performance across different Express versions
 - Maintain two categories of tests:
   - Focused unit benchmarks (in package repos)
   - E2E load tests of realistic applications (in express repo)
