@@ -81,7 +81,6 @@ export default function main (_opts = {}) {
       const outputFile = join(dirname(import.meta.resolve(opts.test).replace(/^file:/, '')), 'results', 'result-' + Date.now() + '.json');
       await mkdir(dirname(outputFile), { recursive: true });
       await writeFile(outputFile, JSON.stringify(results, null, 2));
-      console.log(inspect(results, { depth: null }));
       console.log(`written to: ${outputFile}`);
     } catch (e) {
       console.error(e);

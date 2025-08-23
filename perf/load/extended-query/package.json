@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.mjs",
   "scripts": {
-    "setup": "npm i"
+    "setup": "npm i --no-workspaces --install-links"
   },
   "keywords": [],
   "author": "",
@@ -11,7 +11,6 @@
   "description": "",
   "dependencies": {
     "@expressjs/perf-requests": "file:../../../packages/requests",
-    "@expressjs/perf-servers": "file:../../../packages/servers",
-    "express": "^5.1.0"
+    "@expressjs/perf-servers-express-extended-query": "file:../../../servers/express-extended-query"
   }
 }

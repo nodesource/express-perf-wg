@@ -6,8 +6,8 @@ FROM node:${NODE_VERSION}-${NODE_BASE}
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      linux-perf=6.1.140-1 \
-      jq=1.6-2.1 && \
+      linux-perf \
+      jq && \
     rm -rf /var/lib/apt/lists/*
 
 # Setup @mmarchini/observe
@@ -26,6 +26,7 @@ RUN git clone https://github.com/brendangregg/FlameGraph.git
 VOLUME ["/home/node/repo"]
 VOLUME ["/home/node/results"]
 EXPOSE 3000 9229
-COPY metadata.mjs metadata.mjs
+COPY metadata-bundle.mjs metadata.mjs
+COPY overrides.mjs overrides.mjs
 COPY scripts/start.sh start.sh
 ENTRYPOINT ["./start.sh"]

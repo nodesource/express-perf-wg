@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import ac from '@expressjs/perf-autocannon';
 import { collectMetadata } from '@expressjs/perf-metadata';
@@ -14,21 +14,19 @@ export function buildContainer (opts = {}) {
     // TODO: bookworm hardcoded until we figure out
     // https://github.com/nodejs/docker-node/issues/2101#issuecomment-3024653783
     const os = 'bookworm';
-    const tag = `expf-runner:${nodeVer}-${os}`;
 
     // TODO: resolve node version alias to specific version
     const cp = execFile(
       join(import.meta.dirname, 'scripts', 'build.sh'),
       [
         nodeVer,
-        'bookworm',
-        tag
+        os
       ],
       { cwd: import.meta.dirname }
     );
     cp.on('exit', () => {
       resolve({
-        tag,
+        tag: `expf-runner:${nodeVer}-${os}`,
         node: nodeVer
       });
     });
@@ -48,18 +46,20 @@ export function startServer (opts = {}) {
       return reject(opts.signal.reason);
     }
 
-    const cp = execFile(
-      join(import.meta.dirname, 'scripts', 'run.sh'),
-      [
-        // TODO: convert this to json, there is much more to pass?
-        opts.cwd,
-        opts.repo,
-        opts.repoRef,
-        opts.test,
-        opts.tag
-      ],
-      { }
-    );
+    const args = [
+      // TODO: convert this to json, there is much more to pass?
+      opts.cwd,
+      opts.repo,
+      opts.repoRef,
+      opts.test,
+      opts.tag,
+    ];
+
+    if (opts.overrides) {
+      args.push(opts.overrides);
+    }
+
+    const cp = execFile(join(import.meta.dirname, 'scripts', 'run.sh'), args, { });
 
     const server = {
       metadata: {
@@ -84,7 +84,8 @@ export function startServer (opts = {}) {
           readFile(join(opts.cwd, 'results', 'output.txt'), { encoding: 'utf8' }),
           readFile(join(opts.cwd, 'results', 'profile.svg'), { encoding: 'utf8' }),
           readFile(join(opts.cwd, 'results', 'perf.data')),
-          readFile(join(opts.cwd, 'results', 'metadata.json'), { encoding: 'utf8' })
+          readFile(join(opts.cwd, 'results', 'metadata.json'), { encoding: 'utf8' }),
+          readFile(join(opts.cwd, 'results', 'package-lock.json'), { encoding: 'utf8' })
         ]);
 
         // System information from inside the container
@@ -98,7 +99,8 @@ export function startServer (opts = {}) {
         return {
           output: results[0].value || results[0].error,
           flamegraph: results[1].value || results[1].error,
-          rawPerfData: results[2].value || results[2].error
+          rawPerfData: results[2].value || results[2].error,
+          lockfile: results[4].value || results[4].error
         };
       }
     };
@@ -136,6 +138,8 @@ export async function startClient (_opts = {}, server) {
   });
 
   opts?.signal.addEventListener('abort', () => {
+    // @TODO I dont think this is working
+    console.log('should stop client')
     cannon.stop?.();
   });
 

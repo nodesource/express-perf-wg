@@ -14,9 +14,10 @@ fi
 
 CWD=${1:-$(realpath $DIR/../../../)}
 REPO=${2:-"https://github.com/expressjs/perf-wg.git"}
-REF=${3:-"master"}
+REF=${3:-"main"}
 TEST=${4:-"@expressjs/perf-servers/node-http"}
-TAG=${5:-"perf-runner:latest"}
+TAG=${5:-"expf-runner:latest"}
+OVERRIDES="${6}"
 
 # Start docker daemon if not running
 if (! docker stats --no-stream >/dev/null 2>&1 ); then
@@ -37,9 +38,11 @@ rm "$CWD/results/*" 2> /dev/null || true
 # If we are in an interactive terminal, run directly with -it
 if [ $IS_TERM == true ]; then
   docker run --rm -it \
+    --cap-add SYS_ADMIN \
     --env "REPO=$REPO" \
     --env "REF=$REF" \
     --env "TEST=$TEST" \
+    --env "OVERRIDES=$OVERRIDES" \
     --volume "$CWD:/home/node/repo" \
     --volume "$CWD/results:/home/node/results" \
     -p 3000:3000 \
@@ -49,10 +52,12 @@ else
   # If we are not in an interactive terminal, we have
   # to run a more complicated setup
   ID=$(docker run --rm -d \
+    --cap-add SYS_ADMIN \
     --env NO_SPIN=1 \
     --env "REPO=$REPO" \
     --env "REF=$REF" \
     --env "TEST=$TEST" \
+    --env "OVERRIDES=$OVERRIDES" \
     --volume "$CWD:/home/node/repo" \
     --volume "$CWD/results:/home/node/results" \
     -p 3000:3000 \
